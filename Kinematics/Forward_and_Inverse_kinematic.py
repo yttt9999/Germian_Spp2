@@ -171,7 +171,7 @@ try:
                     stepper_1.setTargetPosition(0,-1*target_position_stepper_1)
                     target_degree_theta1 = math.radians(float(target_degree_theta1))
                     target_degree_theta2 = math.radians(float(target_degree_theta2))
-                    b = (h2 + r2*math.cos(target_degree_theta2))/math.tan(target_degree_theta2)+r2*math.sin(target_degree_theta2)+r1/math.tan(target_degree_theta1)
+                    b = (h2 + r2*math.cos(target_degree_theta2))/math.tan(target_degree_theta2)+r2*math.sin(target_degree_theta2)+r1*math.tan(target_degree_theta1)
                     FK_X = r1/math.cos(target_degree_theta1)-b*math.sin(target_degree_theta1)
                     FK_Y = b*math.cos(target_degree_theta1)
                     print("real_world_codinate: (%lf,%lf)"%(FK_X,FK_Y))
