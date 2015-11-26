@@ -3,9 +3,9 @@ import flycapture2 as fc2
 import cv2
 import numpy as np
 #Define camera matrix and distortion coefficient
-camera_M = np.array([[411.42948014, 0, 331.38683566], [0, 411.0871804, 208.84949458], [0, 0, 1]])
-distortion_coefficient = np.array([-0.33504357,0.07164384, -0.00376871 ,0.0016508  ,0.15057044])
-reference_4_points = [np.array([[236,153]]),np.array([[466,161]]),np.array([[514,411]]),np.array([[132,371]])]
+camera_M = np.array([[416.86901936, 0, 324.01152631], [0, 416.26868277, 205.22893073], [0, 0, 1]])
+distortion_coefficient = np.array([-0.35769096,0.15509368, -0.00050413 ,0.00060975  ,0.00612263])
+reference_4_points = [np.array([[231,131]]),np.array([[484,136]]),np.array([[571,331]]),np.array([[150,323]])]
 
 #Define Gaussian blur parameters:
 Gaussian_Ratio = 5
@@ -47,12 +47,15 @@ def undistort_image(flycamera):
     fixed_image = cv2.bitwise_and(fixed_image,fixed_image,mask = mask)
     return fixed_image
 
-def find_brightest_point(image):
-    gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+def find_brightest_point(image, whether_gray):
+    if whether_gray == True:
+        gray_image = image
+    else:
+        gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     #Apply Gaussian Blur
     gray_image = cv2.GaussianBlur(gray_image,(Gaussian_Ratio,Gaussian_Ratio),0)
     (minVal, maxVal, minLoc,maxLoc) = cv2.minMaxLoc(gray_image)
-    return maxVal,maxLoc
+    return np.array([maxVal]),np.array([maxLoc])
 
 def find_darkest_point(image):
     gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
