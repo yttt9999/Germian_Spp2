@@ -27,6 +27,7 @@ if __name__ == "__main__":
         [new_image,H] = four_pts_transormation(image_undis,reference_4_points)
         cv2.imshow("real_time",new_image)
         if cv2.waitKey(1) & 0xFF == ord("q"):
+            cv2.imwrite('origin_image.jpg',new_image)
             break
     cv2.destroyAllWindows()
     MyFlycam.stop_capture()
