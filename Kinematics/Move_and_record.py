@@ -34,6 +34,8 @@ class Move_and_record():
         self.Stepper_upper_position = 0
         self.camera_pos = np.array([(0,0)])
         self.motor_pos = np.array([(0,0)])
+        self.motor_pos_circle = np.array([])
+        self.camera_pos_circle = np.array([])
         self.center_pos = np.array([(0,0)])
         self.temp_slope_intercept =  np.array([(0,0)])
         self.Laser_point_Loc = np.array([])
@@ -44,8 +46,10 @@ class Move_and_record():
         self.direction_flag = 0
         self.area_limi_x_min = 40
         self.area_limi_x_max = 230
-        self.area_limi_y_min = 20
-        self.area_limi_y_max = 160
+        self.area_limi_y_min = 40
+        self.area_limi_y_max = 150
+        # 40 230 40 150 for line demo
+        # 60 230 30 170 for tri demo
 
 
 
@@ -88,10 +92,11 @@ class Move_and_record():
                 self.move_motor(2)
                 print "Down"
             if key == "z":
-                # self.save_pos()
-                self.center_calcu()
-                print "center_calcu_done"
-                print self.center_pos
+                self.save_pos()
+                # self.center_calcu()
+                # print "center_calcu_done"
+                # print self.center_pos
+                print "save one pos"
             if key == "p":
                 self.auto_cali()
                 # np.save(os.path.join('data', 'camera_pos'),self.camera_pos)
@@ -104,17 +109,23 @@ class Move_and_record():
             if key == "m":
                 np.save(os.path.join('data', 'camera_pos'),self.camera_pos)
                 np.save(os.path.join('data', 'motor_pos'),self.motor_pos)
-                np.save(os.path.join('data', 'center_pos'),self.center_pos)
+                # np.save(os.path.join('data', 'center_pos'),self.center_pos)
                 print "Save Done"
                 # print self.camera_pos
                 # print self.motor_pos
             if key == "l":
                 self.camera_pos = np.load(os.path.join('data', 'camera_pos.npy'))
                 self.motor_pos = np.load(os.path.join('data', 'motor_pos.npy'))
+                self.camera_pos_circle = np.load(os.path.join('data', 'camera_pos_circle.npy'))
+                self.motor_pos_circle = np.load(os.path.join('data', 'motor_pos_circle.npy'))
                 # self.center_pos = np.load(os.path.join('data', 'center_pos'))
                 # image = self.pos_drawing()
-                print "Load Down"
+                print "Load Done"
             if key == "i":
+                self.area_limi_x_min = 40
+                self.area_limi_x_max = 230
+                self.area_limi_y_min = 40
+                self.area_limi_y_max = 150
                 self.line_regress()
                 intersect_point = self.intersect_finding(40.0,60.0,150.0,170.0)
                 move_point = self.find_nearest_2_point(intersect_point)
@@ -125,7 +136,7 @@ class Move_and_record():
                 self.Stepper_bottom.setTargetPosition(0,0)
                 self.Stepper_upper.setTargetPosition(0,0)
                 sleep(2)
-                intersect_point = self.intersect_finding(40.0,60.0,180.0,60.0)
+                intersect_point = self.intersect_finding(40.0,60.0,150.0,60.0)
                 move_point = self.find_nearest_2_point(intersect_point)
                 self.point_move(move_point)
                 sleep(2)
@@ -137,12 +148,28 @@ class Move_and_record():
                 intersect_point = self.intersect_finding(40.0,60.0,150.0,120.0)
                 move_point = self.find_nearest_2_point(intersect_point)
                 self.point_move(move_point)
-                # intersect_point = self.intersect_finding(100.0,150.0,140.0,100.0)
-                # move_point = self.find_nesrst_2_point(intersect_point)
+
+            if key == "t":
+                self.area_limi_x_min = 60
+                self.area_limi_x_max = 230
+                self.area_limi_y_min = 30
+                self.area_limi_y_max = 170
+                self.line_regress()
+                intersect_point = self.intersect_finding(60.0,56.0,200.0,130.0)
+                move_point = self.find_nearest_2_point(intersect_point)
                 # self.point_move(move_point)
-                # intersect_point = self.intersect_finding(140.0,100.0,60.0,100.0)
-                # move_point = self.find_nesrst_2_point(intersect_point)
-                # self.point_move(move_point)
+                # sleep(1)
+                intersect_point = np.delete(intersect_point,self.delete_list,0)  #self.delete_list update in intersect_finding function
+                intersect_point_1 = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),float(intersect_point[len(intersect_point)-1][0]-120.0),float(intersect_point[len(intersect_point)-1][1]))
+                move_point_1 = self.find_nearest_2_point(intersect_point_1)
+                # self.point_move(move_point_1)
+                # sleep(1)
+                intersect_point = self.intersect_finding(60.0,40.0,62.0,130.0)
+                move_point_2 = self.find_nearest_2_point(intersect_point)
+                self.point_move(move_point)
+                self.point_move(move_point_1)
+                self.point_move(move_point_2)
+
             if key == "v":
                 slope = 1.038
                 self.line_regress()
@@ -171,7 +198,7 @@ class Move_and_record():
                 self.Stepper_upper.setCurrentPosition(0,0)
                 self.Stepper_bottom_position = 0
                 self.Stepper_upper_position = 0
-                print "Set origin down"
+                print "Set origin done"
             if key == "b":
                 setup_limit(self.Stepper_bottom,0,STEPPER_bottom_CIRCLE*0.3,1.2,STEPPER_bottom_CIRCLE*0.1)
                 setup_limit(self.Stepper_upper,0,STEPPER_upper_CIRCLE*0.3,0.6,STEPPER_upper_CIRCLE*0.1)
@@ -179,6 +206,8 @@ class Move_and_record():
                 self.Stepper_upper.setTargetPosition(0,0)
                 self.Stepper_bottom_position = 0
                 self.Stepper_upper_position = 0
+            if key == "c":
+                self.circle_draw(self.motor_pos_circle)
             if key == "q":
                 break
 
@@ -409,13 +438,55 @@ class Move_and_record():
             pass
         elif self.direction_flag == 1:
             point_theta = np.flipud(point_theta)
-        print point_theta
+        # print point_theta
         return point_theta
 
 
     def point_move(self,move_point):
         for i in range(len(move_point)):
-            if i == 0:
+            if abs(move_point[i][0])>50.0 or abs(move_point[i][1])>50.0:
+                pass
+            else:
+                if i == 0:
+                    self.Stepper_bottom_position = angel2step(move_point[i][0],1)
+                    self.Stepper_upper_position = angel2step(move_point[i][1],2)
+                    self.move_motor(1)
+                    self.move_motor(2)
+                    while (self.Stepper_upper.getCurrentPosition(0) != self.Stepper_upper.getTargetPosition(0)):
+                        pass
+                    while (self.Stepper_bottom.getCurrentPosition(0) != self.Stepper_bottom.getTargetPosition(0)):
+                        pass
+                    sleep(1)
+                else:
+                    bottom_move = angel2step(abs(move_point[i][0]-move_point[i-1][0]),1)
+                    upper_move = angel2step(abs(move_point[i][1]-move_point[i-1][1]),2)
+
+                    if bottom_move == 0:
+                        bottom_move = 100
+                    if upper_move == 0:
+                        upper_move = 100
+                    # if bottom_move > 300:
+                    #     bottom_move = 300
+                    if upper_move > 300:
+                        bottom_move = bottom_move / 2
+                        upper_move = upper_move / 2
+
+                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*100)            #50 10
+                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*100)
+                    self.Stepper_bottom_position = angel2step(move_point[i][0],1)
+                    self.Stepper_upper_position = angel2step(move_point[i][1],2)
+                    self.move_motor(1)
+                    self.move_motor(2)
+                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 100): #100
+                        pass
+                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 100):
+                        pass
+
+                # print self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)
+
+    def circle_draw(self,move_point):
+        for i in range(len(move_point)):
+            if i <= 1:
                 self.Stepper_bottom_position = angel2step(move_point[i][0],1)
                 self.Stepper_upper_position = angel2step(move_point[i][1],2)
                 self.move_motor(1)
@@ -424,27 +495,51 @@ class Move_and_record():
                     pass
                 while (self.Stepper_bottom.getCurrentPosition(0) != self.Stepper_bottom.getTargetPosition(0)):
                     pass
-                sleep(1)
             else:
                 bottom_move = angel2step(abs(move_point[i][0]-move_point[i-1][0]),1)
                 upper_move = angel2step(abs(move_point[i][1]-move_point[i-1][1]),2)
-                if bottom_move == 0:
-                    bottom_move = 100
-                elif upper_move == 0:
-                    upper_move = 100
-                setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*10)
-                setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*10)
+                if bottom_move < 10 or upper_move < 10:
+                    bottom_move = 30
+                    upper_move = 30
+                if upper_move > 300 or bottom_move > 300:
+                    bottom_move = bottom_move / 2
+                    upper_move = upper_move / 2
+
+                setup_limit(self.Stepper_bottom,0,1000,1.2,500)
+                setup_limit(self.Stepper_upper,0,3000,0.6,500)
                 self.Stepper_bottom_position = angel2step(move_point[i][0],1)
                 self.Stepper_upper_position = angel2step(move_point[i][1],2)
                 self.move_motor(1)
                 self.move_motor(2)
-
-                while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 50):
-                    pass
                 while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 50):
                     pass
-                # print self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)
+                while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 50):
+                    pass
 
+
+    def circle_intersect(self,center,radius):
+        center = float(center)
+        radius = float(radius)
+        intersect_point = np.array([(0,0)])
+        for i in range(len(self.temp_slope_intercept)):
+            A = self.temp_slope_intercept[i][0] ** 2  + 1.0
+            B = 2.0 * (self.temp_slope_intercept[i][0]*self.temp_slope_intercept[i][1]-self.temp_slope_intercept[i][0]*center[1]-center[0])
+            C = center[1]**2-radius**2+center[0]**2-2.0*self.temp_slope_intercept[i][1]*center[1]+self.temp_slope_intercept[i][1]**2
+            delta = B**2-4.0*A*C
+            if delta < 0:
+                pass
+            elif delta == 0:
+                temp = (-1.0*B)/(2.0*A)
+                intersect_point = np.append(intersect_point,np.array([(temp,self.temp_slope_intercept[i][0]*temp+self.temp_slope_intercept[i][1])]),axis=0)
+            else:
+                x1 = (-1.0*B+math.sqrt(delta))/(2.0*A)
+                x2 = (-1.0*B-math.sqrt(delta))/(2.0*A)
+                y1 = self.temp_slope_intercept[i][0]*x1 + self.temp_slope_intercept[i][1]
+                y2 = self.temp_slope_intercept[i][0]*x2 + self.temp_slope_intercept[i][1]
+                intersect_point = np.append(intersect_point,np.array([(x1,y1)]),axis=0)
+                intersect_point = np.append(intersect_point,np.array([(x2,y2)]),axis=0)
+        intersect_point = np.delete(intersect_point,0,0)
+        return intersect_point
 
 
 

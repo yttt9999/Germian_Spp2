@@ -10,9 +10,11 @@ from camera_setup import *
 
 
 if __name__ == "__main__":
-
-    MyFlycam = flycamera_init()
-    MyFlycam.start_capture()
+    red = (255,0,0)
+    # MyFlycam = flycamera_init()
+    # MyFlycam.start_capture()
+    im = cv2.imread('autocali_1.jpg')
+    cv2.rectangle(im,(80,40),(190,160),red,1)
 
     # im = fc2.Image()
     # MyFlycam.retrieve_buffer(im)
@@ -23,11 +25,11 @@ if __name__ == "__main__":
     # cv2.imshow("after distort",image_undis)
     # cv2.waitKey(0)
     while True:
-        image_undis = undistort_image(MyFlycam)
-        [new_image,H] = four_pts_transormation(image_undis,reference_4_points)
-        cv2.imshow("real_time",new_image)
+        # image_undis = undistort_image(MyFlycam)
+        # [new_image,H] = four_pts_transormation(image_undis,reference_4_points)
+        cv2.imshow("yy",im)
         if cv2.waitKey(1) & 0xFF == ord("q"):
-            cv2.imwrite('origin_image.jpg',new_image)
+            # cv2.imwrite('origin_image.jpg',new_image)
             break
     cv2.destroyAllWindows()
     MyFlycam.stop_capture()
