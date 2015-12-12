@@ -28,8 +28,8 @@ class Move_and_record():
         self.Stepper_upper.setCurrentPosition(0,0)
         setup_limit(self.Stepper_bottom,0,STEPPER_bottom_CIRCLE*0.3,1.2,STEPPER_bottom_CIRCLE*0.1)
         setup_limit(self.Stepper_upper,0,STEPPER_upper_CIRCLE*0.3,0.6,STEPPER_upper_CIRCLE*0.1)
-        self.MyFlycam = flycamera_init()
-        self.MyFlycam.start_capture()
+        # self.MyFlycam = flycamera_init()
+        # self.MyFlycam.start_capture()
         self.Stepper_bottom_position = 0
         self.Stepper_upper_position = 0
         self.camera_pos = np.array([(0,0)])
@@ -149,7 +149,7 @@ class Move_and_record():
                 move_point = self.find_nearest_2_point(intersect_point)
                 self.point_move(move_point)
 
-            if key == "t":
+            if key =="t":
                 self.area_limi_x_min = 60
                 self.area_limi_x_max = 230
                 self.area_limi_y_min = 30
@@ -169,6 +169,83 @@ class Move_and_record():
                 self.point_move(move_point)
                 self.point_move(move_point_1)
                 self.point_move(move_point_2)
+
+            if key == "b":
+                self.area_limi_x_min = 60
+                self.area_limi_x_max = 170
+                self.area_limi_y_min = 50
+                self.area_limi_y_max = 130
+                self.line_regress()
+                intersect_point = self.intersect_finding(60.0,56.0,200.0,100.0)
+                move_point = self.find_nearest_2_point(intersect_point)
+                self.point_move(move_point)
+                # print move_point
+                # sleep(1)
+                for i in range(2):
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)  #self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),135,130)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+                    # print move_point
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)  #self.delete_list update in intersect_finding function
+                    # print intersect_point
+                    intersect_point = self.intersect_finding(float(intersect_point[0][0]),float(intersect_point[0][1]),60,90)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+                    # print move_point
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[0][0]),float(intersect_point[0][1]),100,56)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),170,75)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),130,130)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[0][0]),float(intersect_point[0][1]),95,65)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[0][0]),float(intersect_point[0][1]),60,110)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[0][0]),float(intersect_point[0][1]),100,130)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),135,65)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+
+                    intersect_point = np.delete(intersect_point,self.delete_list,0)#self.delete_list update in intersect_finding function
+                    intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),200,120)
+                    move_point = self.find_nearest_2_point(intersect_point)
+                    self.point_move(move_point)
+                # print intersect_point
+                # sleep(1)
+                # intersect_point = np.delete(intersect_point,self.delete_list,0)
+                # print intersect_point
+                # intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),100,56)
+                # move_point = self.find_nearest_2_point(intersect_point)
+                # self.point_move(move_point)
+                #
+                # intersect_point = np.delete(intersect_point,self.delete_list,0)
+                # print intersect_point
+                # self.point_move(move_point_1)
+                # self.point_move(move_point_2)
 
             if key == "v":
                 slope = 1.038
@@ -381,8 +458,12 @@ class Move_and_record():
             intercept_point = np.append(intercept_point, np.array([(cross_x,cross_y)]),axis=0)
         intercept_point = np.delete(intercept_point,0,0)
         for j in range(len(intercept_point)):
-            if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][0] > self.area_limi_y_max):
-                self.delete_list.append(j)
+            if startpoint_x < endpoint_x:
+                if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] < startpoint_x or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][1] > self.area_limi_y_max):
+                    self.delete_list.append(j)
+            else:
+                if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] > startpoint_x or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][1] > self.area_limi_y_max):
+                    self.delete_list.append(j)
         if startpoint_x < endpoint_x:
             self.direction_flag = -1
         else:
@@ -404,7 +485,7 @@ class Move_and_record():
             intercept_point = np.append(intercept_point, np.array([(cross_x,cross_y)]),axis=0)
         intercept_point = np.delete(intercept_point,0,0)
         for j in range(len(intercept_point)):
-            if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][0] > self.area_limi_y_max):
+            if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][1] > self.area_limi_y_max):
                 self.delete_list.append(j)
         intercept_copy = intercept_point
         intercept_copy = np.delete(intercept_copy,self.delete_list,0)
@@ -471,15 +552,16 @@ class Move_and_record():
                         bottom_move = bottom_move / 2
                         upper_move = upper_move / 2
 
-                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*100)            #50 10
-                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*100)
+                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*3)            #50 10
+                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*3)
                     self.Stepper_bottom_position = angel2step(move_point[i][0],1)
                     self.Stepper_upper_position = angel2step(move_point[i][1],2)
                     self.move_motor(1)
                     self.move_motor(2)
-                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 100): #100
+
+                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 50): #100
                         pass
-                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 100):
+                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 50):
                         pass
 
                 # print self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)
