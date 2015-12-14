@@ -28,8 +28,8 @@ class Move_and_record():
         self.Stepper_upper.setCurrentPosition(0,0)
         setup_limit(self.Stepper_bottom,0,STEPPER_bottom_CIRCLE*0.3,1.2,STEPPER_bottom_CIRCLE*0.1)
         setup_limit(self.Stepper_upper,0,STEPPER_upper_CIRCLE*0.3,0.6,STEPPER_upper_CIRCLE*0.1)
-        # self.MyFlycam = flycamera_init()
-        # self.MyFlycam.start_capture()
+        self.MyFlycam = flycamera_init()
+        self.MyFlycam.start_capture()
         self.Stepper_bottom_position = 0
         self.Stepper_upper_position = 0
         self.camera_pos = np.array([(0,0)])
@@ -92,7 +92,11 @@ class Move_and_record():
                 self.move_motor(2)
                 print "Down"
             if key == "z":
-                self.save_pos()
+                for i in range(720):
+                    self.save_pos()
+                    sleep(0.46)
+                    if i % 30 == 0:
+                        print "save one line"
                 # self.center_calcu()
                 # print "center_calcu_done"
                 # print self.center_pos
@@ -170,7 +174,17 @@ class Move_and_record():
                 self.point_move(move_point_1)
                 self.point_move(move_point_2)
 
-            if key == "b":
+            if key == "g":
+                self.area_limi_x_min = 60
+                self.area_limi_x_max = 170
+                self.area_limi_y_min = 50
+                self.area_limi_y_max = 130
+                self.line_regress()
+
+                self.point_move(move_point)
+
+
+            if key == "n":
                 self.area_limi_x_min = 60
                 self.area_limi_x_max = 170
                 self.area_limi_y_min = 50
@@ -472,9 +486,10 @@ class Move_and_record():
         # print intercept_point
         return intercept_point
 
-    def intersect_finding_mode2(self,slope,startpoint_x,startpoint_y):
+    def intersect_finding_mode2(self,slope,startpoint_x,startpoint_y,direction):
         self.delete_list = []
-        self.direction_flag = 0
+        self.direction_flag = direction
+
         # slope = float((endpoint_y - startpoint_y) / (endpoint_x-startpoint_x))
         intercept = startpoint_y - slope*startpoint_x
         # print slope, intercept
@@ -489,10 +504,17 @@ class Move_and_record():
                 self.delete_list.append(j)
         intercept_copy = intercept_point
         intercept_copy = np.delete(intercept_copy,self.delete_list,0)
-        if startpoint_x < intercept_copy[len(intercept_copy)-1][0]:
-            self.direction_flag = -1
-        else:
-            self.direction_flag = 1
+        for j in range(len(intercept_point)):
+            if direction == -1:
+                if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] < startpoint_x or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][1] > self.area_limi_y_max):
+                    self.delete_list.append(j)
+            else:
+                if (intercept_point[j][0] < self.area_limi_x_min or intercept_point[j][0] > startpoint_x or intercept_point[j][0] > self.area_limi_x_max or intercept_point[j][1] < self.area_limi_y_min or intercept_point[j][1] > self.area_limi_y_max):
+                    self.delete_list.append(j)
+        # if startpoint_x < intercept_copy[len(intercept_copy)-1][0]:
+        #     self.direction_flag = -1
+        # else:
+        #     self.direction_flag = 1
 
         # print intercept_point
         return intercept_point
@@ -537,7 +559,7 @@ class Move_and_record():
                         pass
                     while (self.Stepper_bottom.getCurrentPosition(0) != self.Stepper_bottom.getTargetPosition(0)):
                         pass
-                    sleep(1)
+                    # sleep(1)
                 else:
                     bottom_move = angel2step(abs(move_point[i][0]-move_point[i-1][0]),1)
                     upper_move = angel2step(abs(move_point[i][1]-move_point[i-1][1]),2)
@@ -552,16 +574,16 @@ class Move_and_record():
                         bottom_move = bottom_move / 2
                         upper_move = upper_move / 2
 
-                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*3)            #50 10
-                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*3)
+                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*10)            #50 10
+                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*10)
                     self.Stepper_bottom_position = angel2step(move_point[i][0],1)
                     self.Stepper_upper_position = angel2step(move_point[i][1],2)
                     self.move_motor(1)
                     self.move_motor(2)
 
-                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 50): #100
+                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 64): #100
                         pass
-                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 50):
+                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 64):
                         pass
 
                 # print self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)
