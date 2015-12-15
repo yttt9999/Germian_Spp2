@@ -13,7 +13,8 @@ from get_key import *
 import math
 from scipy import stats
 from camera_setup import *
-
+from MOG_bg_subtraction import *
+from ball_API import *
 green = (0,255,0)
 STEPPER_bottom_CIRCLE = 16457
 STEPPER_upper_CIRCLE = 85970
@@ -21,6 +22,7 @@ STEPPER_upper_CIRCLE = 85970
 class Move_and_record():
     def __init__(self):
         # pygame.init()
+        self.B = Ball(50,50,3.14,1)
         [self.Stepper_bottom, self.Stepper_upper] = stepper_init()
         self.Stepper_bottom.setEngaged(0,True)
         self.Stepper_upper.setEngaged(0,True)
@@ -48,17 +50,32 @@ class Move_and_record():
         self.area_limi_x_max = 230
         self.area_limi_y_min = 40
         self.area_limi_y_max = 150
+        self.crop_width = 0
+        self.crop_hight = 0
+
         # 40 230 40 150 for line demo
         # 60 230 30 170 for tri demo
 
 
 
+    def image_get(self):
+        image = undistort_image(self.MyFlycam)
+        [image,H] = four_pts_transormation(image,reference_4_points)
+        image = image[bg_crop_y:bg_crop_y+self.crop_hight,bg_crop_x:bg_crop_x+self.width]
+        background_subtraction = MOG_background_subtraction(image,self.gaussian_mean,self.gaussian_std,self.gaussian_weight)
+        Laser_point_val,Laser_point_Loc = find_brightest_point(image,True)
+        return background_subtraction, Laser_point_Loc
+
 
     def image_preproces(self):
         init_image = undistort_image(self.MyFlycam)
         [image,H] = four_pts_transormation(init_image,reference_4_points)
-        self.gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-        (T,self.image_thre) = cv2.threshold(self.gray_image,200,255,cv2.THRESH_BINARY)
+        self.crop_width = iamge.shape[1]-2*bg_crop_x
+        self.crop_hight = iamge.shape[0]-2*bg_crop_y
+        self.gaussian_mean, self.gaussian_std, self.gaussian_weight = flycap_gaussian_model_initialization(self.MyFlycam,self.crop_width,self.crop_hight,bg_K,bg_initial_num_sample)
+
+        # self.gray_image = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
+        # (T,self.image_thre) = cv2.threshold(self.gray_image,200,255,cv2.THRESH_BINARY)
 
     def update_laser_loc(self):
         self.image_preproces()
@@ -175,14 +192,72 @@ class Move_and_record():
                 self.point_move(move_point_2)
 
             if key == "g":
+                self.image_preproces()
+                slope = 1
+                direction = -1
+                start_x = 60.0
+                start_y = 56.0
                 self.area_limi_x_min = 60
                 self.area_limi_x_max = 170
                 self.area_limi_y_min = 50
                 self.area_limi_y_max = 130
                 self.line_regress()
+                while (True):
+                    bgsub, br = self.image_get()
+                    hit_not, (hitx,hity), theta = self.B.updateBall(bgsub,br)
+                    if hit_not == 1:
+                        intersect_point = self.intersect_finding_mode2(1,float(hitx),float(hity),1)
+                        move_point = self.find_nearest_2_point(intersect_point)
+                        self.point_move(move_point)
+                    # self.waitinput
+                    # self.point_move(move_point)
+                    # intersect_point = self.intersect_finding_mode2(slope,start_x,start_y,direction)
+                    # move_point = self.find_nearest_2_point(intersect_point)
+                    # self.point_move(move_point)
 
-                self.point_move(move_point)
+            if key == "v":
+                start_x = 60.0
+                start_y = 56.0
+                self.area_limi_x_min = 60
+                self.area_limi_x_max = 170
+                self.area_limi_y_min = 50
+                self.area_limi_y_max = 130
+                direction = -1
+                slope = 0.45
+                self.line_regress()
+                for i in range(7):
+                    if i == 0:
+                        intersect_point = self.intersect_finding_mode2(slope,start_x,start_y,direction)
+                        move_point = self.find_nearest_2_point(intersect_point)
+                        self.point_move(move_point)
+                        # intersect_point = np.delete(intersect_point,self.delete_list,0)
+                        # start_x = intersect_point[len(intersect_point)-1][0]
+                        # start_y = intersect_point[len(intersect_point)-1][1]
+                    else:
+                        intersect_point = np.delete(intersect_point,self.delete_list,0)
+                        print start_x,start_y,direction
+                        print(intersect_point)
+                        if abs(start_x - intersect_point[len(intersect_point)-1][0]) < 10.0:
+                            start_x = intersect_point[0][0]
+                            start_y = intersect_point[0][1]
+                            if slope > 0 :
+                                direction = - 1
+                            else:
+                                direction = 1
+                        else:
+                            start_x = intersect_point[len(intersect_point)-1][0]
+                            start_y = intersect_point[len(intersect_point)-1][1]
+                            if slope > 0 :
+                                direction = 1
+                            else:
+                                direction = -1
+                        slope = -1.0 * slope
+                        # direction = 1
+                        intersect_point = self.intersect_finding_mode2(slope,start_x,start_y,direction)
+                        move_point = self.find_nearest_2_point(intersect_point)
+                        self.point_move(move_point)
 
+                    # print move_point
 
             if key == "n":
                 self.area_limi_x_min = 60
@@ -195,7 +270,7 @@ class Move_and_record():
                 self.point_move(move_point)
                 # print move_point
                 # sleep(1)
-                for i in range(2):
+                for i in range(4):
                     intersect_point = np.delete(intersect_point,self.delete_list,0)  #self.delete_list update in intersect_finding function
                     intersect_point = self.intersect_finding(float(intersect_point[len(intersect_point)-1][0]),float(intersect_point[len(intersect_point)-1][1]),135,130)
                     move_point = self.find_nearest_2_point(intersect_point)
@@ -261,28 +336,7 @@ class Move_and_record():
                 # self.point_move(move_point_1)
                 # self.point_move(move_point_2)
 
-            if key == "v":
-                slope = 1.038
-                self.line_regress()
-                intersect_point = self.intersect_finding_mode2(slope,135.0,50.0)
-                move_point = self.find_nearest_2_point(intersect_point)
-                intersect_point = np.delete(intersect_point,self.delete_list,0)
-                start_x = intersect_point[len(intersect_point)-1][0]
-                start_y = intersect_point[len(intersect_point)-1][1]
-                print move_point
-                for i in range(5):
-                    slope = -1.0 * slope
-                    intersect_point = self.intersect_finding_mode2(slope,start_x,start_y)
-                    move_point = self.find_nearest_2_point(intersect_point)
-                    self.point_move(move_point)
-                    intersect_point = np.delete(intersect_point,self.delete_list,0)
-                    if abs(start_x - intersect_point[len(intersect_point)-1][0]) < 0.1:
-                        start_x = intersect_point[0][0]
-                        start_y = intersect_point[0][1]
-                    else:
-                        start_x = intersect_point[len(intersect_point)-1][0]
-                        start_y = intersect_point[len(intersect_point)-1][1]
-                print move_point
+
 
             if key == "o":
                 self.Stepper_bottom.setCurrentPosition(0,0)
@@ -574,16 +628,16 @@ class Move_and_record():
                         bottom_move = bottom_move / 2
                         upper_move = upper_move / 2
 
-                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*10)            #50 10
-                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*10)
+                    setup_limit(self.Stepper_bottom,0,bottom_move*1000,1.2,bottom_move*5)            #50 10
+                    setup_limit(self.Stepper_upper,0,upper_move*1000,0.6,upper_move*5)
                     self.Stepper_bottom_position = angel2step(move_point[i][0],1)
                     self.Stepper_upper_position = angel2step(move_point[i][1],2)
                     self.move_motor(1)
                     self.move_motor(2)
 
-                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 64): #100
+                    while (abs(self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)) > 50): #100
                         pass
-                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 64):
+                    while (abs(self.Stepper_upper.getCurrentPosition(0) - self.Stepper_upper.getTargetPosition(0)) > 50):
                         pass
 
                 # print self.Stepper_bottom.getCurrentPosition(0) - self.Stepper_bottom.getTargetPosition(0)
@@ -649,6 +703,7 @@ class Move_and_record():
 
 def main():
     MR = Move_and_record()
+
     # pygame.key.set_repeat(1, 20)
     MR.keyboard_control()
 
